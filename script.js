@@ -7,9 +7,13 @@ let isResultEvaluated = false;
 const display = document.getElementById("display");
 const prevExpression = document.getElementById("prevExpression");
 const degRadBtn = document.getElementById("degRadBtn");
+const historyToggleBtn = document.getElementById("historyToggleBtn");
 const historyDrawer = document.getElementById("historyDrawer");
 const historyList = document.getElementById("historyList");
+const drawerCloseBtn = document.getElementById("drawerCloseBtn");
+const clearHistoryBtn = document.getElementById("clearHistoryBtn");
 const btnDot = document.getElementById("btnDot");
+const activeBaseChip = document.getElementById("activeBaseChip");
 
 // Base readout elements
 const baseItems = document.querySelectorAll(".base-item");
@@ -40,14 +44,14 @@ function updateBaseNReadout(val) {
     }
     try {
         let intVal;
-        if (currentBase === 'hex') {
-            intVal = parseInt(val, 16);
-        } else if (currentBase === 'oct') {
-            intVal = parseInt(val, 8);
-        } else if (currentBase === 'bin') {
-            intVal = parseInt(val, 2);
+        const radix = getRadix(currentBase);
+
+        if (/[\+\-\*\/]/.test(val)) {
+            const parts = val.split(/[\+\-\*\/]/);
+            const lastPart = parts[parts.length - 1].trim();
+            intVal = lastPart ? parseInt(lastPart, radix) : 0;
         } else {
-            intVal = Math.trunc(parseFloat(val));
+            intVal = currentBase === 'dec' ? Math.trunc(parseFloat(val)) : parseInt(val, radix);
         }
 
         if (isNaN(intVal)) {
@@ -63,10 +67,10 @@ function updateBaseNReadout(val) {
         baseValOct.textContent = intVal.toString(8);
         baseValBin.textContent = intVal.toString(2);
     } catch {
-        baseValDec.textContent = "—";
-        baseValHex.textContent = "—";
-        baseValOct.textContent = "—";
-        baseValBin.textContent = "—";
+        baseValDec.textContent = "0";
+        baseValHex.textContent = "0";
+        baseValOct.textContent = "0";
+        baseValBin.textContent = "0";
     }
 }
 
@@ -74,36 +78,28 @@ function updateDisplay() {
     display.value = currentInput;
     prevExpression.textContent = expression;
     updateBaseNReadout(currentInput);
+    if (activeBaseChip) activeBaseChip.textContent = currentBase.toUpperCase();
 }
 
 function setBase(targetBase) {
     if (currentBase === targetBase) return;
     try {
-        let intVal;
-        if (currentBase === 'hex') {
-            intVal = parseInt(currentInput, 16);
-        } else if (currentBase === 'oct') {
-            intVal = parseInt(currentInput, 8);
-        } else if (currentBase === 'bin') {
-            intVal = parseInt(currentInput, 2);
-        } else {
-            intVal = Math.trunc(parseFloat(currentInput));
+        if (/[\+\-\*\/]/.test(currentInput)) {
+            calculate();
         }
-
-        currentBase = targetBase;
+        const currentRadix = getRadix(currentBase);
+        const targetRadix = getRadix(targetBase);
+        let intVal = parseInt(currentInput, currentRadix);
         if (!isNaN(intVal)) {
-            if (targetBase === 'hex') currentInput = intVal.toString(16).toUpperCase();
-            else if (targetBase === 'oct') currentInput = intVal.toString(8);
-            else if (targetBase === 'bin') currentInput = intVal.toString(2);
-            else currentInput = intVal.toString(10);
+            currentInput = intVal.toString(targetRadix).toUpperCase();
         } else {
             currentInput = "0";
         }
     } catch {
-        currentBase = targetBase;
         currentInput = "0";
     }
 
+    currentBase = targetBase;
     baseItems.forEach(item => {
         item.classList.toggle("active", item.dataset.base === targetBase);
     });
@@ -144,7 +140,7 @@ function updateKeyAvailability() {
 }
 
 function append(val) {
-    if (currentBase === 'bin' && !['0', '1', '+', '-', '*', '/'].includes(val)) return;
+    if (currentBase === 'bin' && !['0', '1', '+', '-', '*', '/', '(', ')'].includes(val)) return;
     if (currentBase === 'oct' && ['8', '9', '.'].includes(val)) return;
     if (currentBase !== 'dec' && val === '.') return;
 
@@ -223,7 +219,8 @@ function sin() {
     if (currentBase !== 'dec') return;
     try {
         const val = parseFloat(currentInput);
-        const res = Math.sin(toAngle(val));
+        let res = Math.sin(toAngle(val));
+        if (!isRadians && Math.abs(val % 180) === 0) res = 0;
         recordHistory(`sin(${currentInput})`, res);
         currentInput = parseFloat(res.toFixed(8)).toString();
         isResultEvaluated = true;
@@ -238,7 +235,8 @@ function cos() {
     if (currentBase !== 'dec') return;
     try {
         const val = parseFloat(currentInput);
-        const res = Math.cos(toAngle(val));
+        let res = Math.cos(toAngle(val));
+        if (!isRadians && Math.abs(val % 180) === 90) res = 0;
         recordHistory(`cos(${currentInput})`, res);
         currentInput = parseFloat(res.toFixed(8)).toString();
         isResultEvaluated = true;
@@ -253,7 +251,13 @@ function tan() {
     if (currentBase !== 'dec') return;
     try {
         const val = parseFloat(currentInput);
-        const res = Math.tan(toAngle(val));
+        if (!isRadians && Math.abs(val % 180) === 90) {
+            currentInput = "Error";
+            updateDisplay();
+            return;
+        }
+        let res = Math.tan(toAngle(val));
+        if (!isRadians && Math.abs(val % 180) === 0) res = 0;
         recordHistory(`tan(${currentInput})`, res);
         currentInput = parseFloat(res.toFixed(8)).toString();
         isResultEvaluated = true;
@@ -405,7 +409,10 @@ function calculate() {
                     if (op === '+') acc += nextVal;
                     else if (op === '-') acc -= nextVal;
                     else if (op === '*') acc *= nextVal;
-                    else if (op === '/') acc = Math.trunc(acc / nextVal);
+                    else if (op === '/') {
+                        if (nextVal === 0) throw new Error("Div/0");
+                        acc = Math.trunc(acc / nextVal);
+                    }
                 }
                 formattedRes = acc.toString(radix).toUpperCase();
             }
@@ -469,19 +476,25 @@ baseItems.forEach(item => {
 });
 
 // Event Listeners
-document.getElementById("degRadBtn").addEventListener("click", toggleDegRad);
-document.getElementById("historyToggleBtn").addEventListener("click", () => {
-    historyDrawer.classList.toggle("open");
-    renderHistory();
-});
-document.getElementById("drawerCloseBtn").addEventListener("click", () => {
-    historyDrawer.classList.remove("open");
-});
-document.getElementById("clearHistoryBtn").addEventListener("click", () => {
-    history = [];
-    localStorage.removeItem("calc_history");
-    renderHistory();
-});
+if (degRadBtn) degRadBtn.addEventListener("click", toggleDegRad);
+if (historyToggleBtn) {
+    historyToggleBtn.addEventListener("click", () => {
+        historyDrawer.classList.toggle("open");
+        renderHistory();
+    });
+}
+if (drawerCloseBtn) {
+    drawerCloseBtn.addEventListener("click", () => {
+        historyDrawer.classList.remove("open");
+    });
+}
+if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener("click", () => {
+        history = [];
+        localStorage.removeItem("calc_history");
+        renderHistory();
+    });
+}
 
 // Keyboard Support
 window.addEventListener("keydown", (e) => {

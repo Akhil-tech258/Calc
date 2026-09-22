@@ -6,7 +6,7 @@
 
 :root {
     --bg-dark: #070a12;
-    --calc-bg: rgba(15, 20, 32, 0.92);
+    --calc-bg: rgba(15, 20, 32, 0.94);
     --border-color: rgba(255, 255, 255, 0.09);
     --accent-cyan: #00f2fe;
     --accent-indigo: #4facfe;
@@ -14,9 +14,9 @@
     --accent-op: #ff9900;
     --accent-danger: #ff4757;
     --accent-warn: #ffa502;
-    --btn-num-bg: rgba(255, 255, 255, 0.06);
+    --btn-num-bg: rgba(255, 255, 255, 0.07);
     --btn-fn-bg: rgba(79, 172, 254, 0.12);
-    --btn-hex-bg: rgba(246, 185, 59, 0.12);
+    --btn-hex-bg: rgba(246, 185, 59, 0.14);
     --text-primary: #ffffff;
     --text-secondary: rgba(255, 255, 255, 0.6);
     --font-ui: 'Outfit', sans-serif;
@@ -25,20 +25,20 @@
 
 body {
     font-family: var(--font-ui);
-    background: radial-gradient(circle at 50% 20%, #151d30 0%, var(--bg-dark) 90%);
+    background: radial-gradient(circle at 50% 15%, #162035 0%, var(--bg-dark) 90%);
     color: var(--text-primary);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: 16px;
     overflow-x: hidden;
 }
 
 .calc-wrapper {
     position: relative;
     width: 100%;
-    max-width: 460px;
+    max-width: 480px;
 }
 
 .calculator {
@@ -48,7 +48,7 @@ body {
     -webkit-backdrop-filter: blur(24px);
     border-radius: 28px;
     padding: 22px;
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65), 0 0 45px rgba(0, 242, 254, 0.08);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.7), 0 0 45px rgba(0, 242, 254, 0.08);
     position: relative;
     z-index: 1;
 }
@@ -58,7 +58,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .brand-block {
@@ -96,9 +96,15 @@ body {
     color: #4ef08e;
     background: rgba(78, 240, 142, 0.1);
     border: 1px solid rgba(78, 240, 142, 0.25);
-    padding: 3px 8px;
+    padding: 3px 7px;
     border-radius: 6px;
     letter-spacing: 0.5px;
+}
+
+.chip-base {
+    color: var(--accent-cyan);
+    background: rgba(0, 242, 254, 0.1);
+    border-color: rgba(0, 242, 254, 0.3);
 }
 
 .mode-pill, .icon-pill {
@@ -108,7 +114,7 @@ body {
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 700;
-    padding: 4px 10px;
+    padding: 4px 9px;
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -125,8 +131,8 @@ body {
     background: rgba(0, 0, 0, 0.45);
     border: 1px solid var(--border-color);
     border-radius: 16px;
-    padding: 14px 18px;
-    margin-bottom: 12px;
+    padding: 12px 18px;
+    margin-bottom: 10px;
     text-align: right;
     box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
 }
@@ -159,7 +165,7 @@ body {
     grid-template-columns: repeat(4, 1fr);
     gap: 6px;
     margin-bottom: 12px;
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.28);
     padding: 6px;
     border-radius: 12px;
     border: 1px solid var(--border-color);
@@ -169,7 +175,7 @@ body {
     background: transparent;
     border: 1px solid transparent;
     border-radius: 8px;
-    padding: 6px 8px;
+    padding: 5px 8px;
     text-align: left;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -183,7 +189,7 @@ body {
 
 .base-item.active {
     background: rgba(0, 242, 254, 0.12);
-    border-color: rgba(0, 242, 254, 0.3);
+    border-color: rgba(0, 242, 254, 0.35);
 }
 
 .base-tag {
@@ -203,55 +209,14 @@ body {
     text-overflow: ellipsis;
 }
 
-/* Hex Keys Row (A, B, C, D, E, F) */
-.hex-keys-row {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
-    margin-bottom: 10px;
-}
-
-.btn-hex {
-    height: 38px;
-    font-size: 13px;
-    font-weight: 700;
-    font-family: var(--font-mono);
-    background: var(--btn-hex-bg);
-    color: var(--accent-amber);
-    border: 1px solid rgba(246, 185, 59, 0.25);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.btn-hex:hover {
-    background: rgba(246, 185, 59, 0.25);
-    border-color: var(--accent-amber);
-    color: #fff;
-}
-
-.btn-hex.disabled {
-    opacity: 0.25;
-    pointer-events: none;
-    border-color: rgba(255, 255, 255, 0.05);
-}
-
-/* Buttons Grid: 5 columns */
-.buttons {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-}
-
+/* General Buttons */
 .btn {
-    height: 48px;
-    font-size: 15px;
     font-family: var(--font-ui);
     font-weight: 600;
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.12s ease;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -261,25 +226,23 @@ body {
     transform: scale(0.95);
 }
 
-.btn-num {
-    background: var(--btn-num-bg);
-    color: var(--text-primary);
+/* Section 1: Function Grid (6 columns) */
+.func-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
 }
 
-.btn-num:hover {
-    background: rgba(255, 255, 255, 0.12);
-}
-
-.btn-num.disabled {
-    opacity: 0.25;
-    pointer-events: none;
+.func-grid .btn {
+    height: 38px;
+    font-size: 13px;
+    font-family: var(--font-mono);
 }
 
 .btn-fn {
     background: var(--btn-fn-bg);
     color: var(--accent-indigo);
-    font-size: 13px;
-    font-family: var(--font-mono);
 }
 
 .btn-fn:hover {
@@ -287,22 +250,28 @@ body {
     color: #ffffff;
 }
 
-.btn-op {
-    background: rgba(255, 153, 0, 0.12);
-    color: var(--accent-op);
-    font-size: 17px;
-    border-color: rgba(255, 153, 0, 0.2);
+.btn-hex {
+    background: var(--btn-hex-bg);
+    color: var(--accent-amber);
+    border-color: rgba(246, 185, 59, 0.25);
+    font-weight: 700;
 }
 
-.btn-op:hover {
-    background: rgba(255, 153, 0, 0.25);
+.btn-hex:hover {
+    background: rgba(246, 185, 59, 0.3);
     color: #ffffff;
 }
 
+.btn-hex.disabled {
+    opacity: 0.22;
+    pointer-events: none;
+    border-color: transparent;
+}
+
 .btn-danger {
-    background: rgba(255, 71, 87, 0.15);
+    background: rgba(255, 71, 87, 0.16);
     color: var(--accent-danger);
-    border-color: rgba(255, 71, 87, 0.25);
+    border-color: rgba(255, 71, 87, 0.28);
 }
 
 .btn-danger:hover {
@@ -311,7 +280,7 @@ body {
 }
 
 .btn-warn {
-    background: rgba(255, 165, 2, 0.12);
+    background: rgba(255, 165, 2, 0.14);
     color: var(--accent-warn);
 }
 
@@ -320,17 +289,64 @@ body {
     color: #000;
 }
 
+/* Divider */
+.keypad-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+    margin-bottom: 12px;
+}
+
+/* Section 2: Standard Numpad Grid (4 columns) */
+.numpad-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.numpad-grid .btn {
+    height: 50px;
+    font-size: 17px;
+}
+
+.btn-num {
+    background: var(--btn-num-bg);
+    color: var(--text-primary);
+    font-size: 18px;
+    font-family: var(--font-mono);
+}
+
+.btn-num:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.btn-num.disabled {
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+.btn-op {
+    background: rgba(255, 153, 0, 0.13);
+    color: var(--accent-op);
+    font-size: 20px;
+    border-color: rgba(255, 153, 0, 0.25);
+}
+
+.btn-op:hover {
+    background: rgba(255, 153, 0, 0.28);
+    color: #ffffff;
+}
+
 .btn-equal {
     background: linear-gradient(135deg, var(--accent-indigo), var(--accent-cyan));
     color: #050816;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
-    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.35);
+    box-shadow: 0 4px 16px rgba(0, 242, 254, 0.35);
 }
 
 .btn-equal:hover {
     filter: brightness(1.15);
-    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
+    box-shadow: 0 6px 22px rgba(0, 242, 254, 0.5);
 }
 
 /* History Drawer */
@@ -444,13 +460,20 @@ body {
 }
 
 @media (max-width: 440px) {
-    .buttons {
+    .func-grid {
+        gap: 4px;
+    }
+    .func-grid .btn {
+        height: 34px;
+        font-size: 11px;
+        border-radius: 7px;
+    }
+    .numpad-grid {
         gap: 6px;
     }
-    .btn {
+    .numpad-grid .btn {
         height: 44px;
-        font-size: 13px;
-        border-radius: 10px;
+        font-size: 16px;
     }
     #display {
         font-size: 24px;
