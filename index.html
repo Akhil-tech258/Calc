@@ -1,48 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Scientific Calculator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator — Pro Math Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="calculator">
-    <input type="text" id="display" readonly>
+<div class="calc-wrapper">
+    <div class="calculator">
+        <!-- Top Toolbar -->
+        <div class="calc-header">
+            <span class="calc-brand">CALC·PRO</span>
+            <div class="header-actions">
+                <button type="button" id="degRadBtn" class="mode-pill" title="Toggle Degrees / Radians">DEG</button>
+                <button type="button" id="historyToggleBtn" class="icon-pill" title="View Calculation History">📜</button>
+            </div>
+        </div>
 
-    <div class="buttons">
-        <button onclick="clearDisplay()" class="clear">C</button>
-        <button onclick="backspace()">⌫</button>
-        <button onclick="append('%')">%</button>
-        <button onclick="append('/')">÷</button>
+        <!-- Dual-line Display -->
+        <div class="display-container">
+            <div class="history-expr" id="prevExpression"></div>
+            <input type="text" id="display" value="0" readonly autocomplete="off">
+        </div>
 
-        <button onclick="sin()">sin</button>
-        <button onclick="cos()">cos</button>
-        <button onclick="tan()">tan</button>
-        <button onclick="append('*')">×</button>
+        <!-- Scientific Keys Grid -->
+        <div class="buttons">
+            <!-- Row 1: Memory & Clear -->
+            <button class="btn btn-fn" onclick="toggleDegRad()">DEG/RAD</button>
+            <button class="btn btn-fn" onclick="append('(')">(</button>
+            <button class="btn btn-fn" onclick="append(')')">)</button>
+            <button class="btn btn-danger" onclick="clearDisplay()">AC</button>
+            <button class="btn btn-warn" onclick="backspace()">⌫</button>
 
-        <button onclick="append('7')">7</button>
-        <button onclick="append('8')">8</button>
-        <button onclick="append('9')">9</button>
-        <button onclick="append('-')">−</button>
+            <!-- Row 2: Advanced Math -->
+            <button class="btn btn-fn" onclick="sin()">sin</button>
+            <button class="btn btn-fn" onclick="cos()">cos</button>
+            <button class="btn btn-fn" onclick="tan()">tan</button>
+            <button class="btn btn-fn" onclick="power()">x²</button>
+            <button class="btn btn-op" onclick="append('/')">÷</button>
 
-        <button onclick="append('4')">4</button>
-        <button onclick="append('5')">5</button>
-        <button onclick="append('6')">6</button>
-        <button onclick="append('+')">+</button>
+            <!-- Row 3: Roots, Logs & Numbers -->
+            <button class="btn btn-fn" onclick="sqrt()">√</button>
+            <button class="btn btn-num" onclick="append('7')">7</button>
+            <button class="btn btn-num" onclick="append('8')">8</button>
+            <button class="btn btn-num" onclick="append('9')">9</button>
+            <button class="btn btn-op" onclick="append('*')">×</button>
 
-        <button onclick="append('1')">1</button>
-        <button onclick="append('2')">2</button>
-        <button onclick="append('3')">3</button>
-        <button onclick="calculate()" class="equal">=</button>
+            <!-- Row 4: Log, PI & Numbers -->
+            <button class="btn btn-fn" onclick="log10()">log</button>
+            <button class="btn btn-num" onclick="append('4')">4</button>
+            <button class="btn btn-num" onclick="append('5')">5</button>
+            <button class="btn btn-num" onclick="append('6')">6</button>
+            <button class="btn btn-op" onclick="append('-')">−</button>
 
-        <button onclick="append('0')">0</button>
-        <button onclick="append('.')">.</button>
-        <button onclick="sqrt()">√</button>
-        <button onclick="power()">x²</button>
+            <!-- Row 5: Natural Log, Exp & Numbers -->
+            <button class="btn btn-fn" onclick="appendMathConst('PI')">π</button>
+            <button class="btn btn-num" onclick="append('1')">1</button>
+            <button class="btn btn-num" onclick="append('2')">2</button>
+            <button class="btn btn-num" onclick="append('3')">3</button>
+            <button class="btn btn-op" onclick="append('+')">+</button>
+
+            <!-- Row 6: Euler, Zero, Point, Equal -->
+            <button class="btn btn-fn" onclick="appendMathConst('E')">e</button>
+            <button class="btn btn-num btn-zero" onclick="append('0')">0</button>
+            <button class="btn btn-num" onclick="append('.')">.</button>
+            <button class="btn btn-equal" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <!-- History Slide-over Drawer -->
+    <div class="history-drawer" id="historyDrawer">
+        <div class="drawer-header">
+            <h3>Calculation Tape</h3>
+            <button class="drawer-close-btn" id="drawerCloseBtn">✕</button>
+        </div>
+        <div class="history-list" id="historyList">
+            <p class="history-empty">No calculations recorded yet.</p>
+        </div>
+        <div class="drawer-footer">
+            <button class="btn-clear-history" id="clearHistoryBtn">Clear Tape</button>
+        </div>
     </div>
 </div>
 
 <script src="script.js"></script>
-
 </body>
 </html>
