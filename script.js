@@ -1,4 +1,5 @@
 let isRadians = false;
+let currentBase = 'dec'; // 'dec', 'hex', 'oct', 'bin'
 let currentInput = "0";
 let expression = "";
 let isResultEvaluated = false;
@@ -8,16 +9,145 @@ const prevExpression = document.getElementById("prevExpression");
 const degRadBtn = document.getElementById("degRadBtn");
 const historyDrawer = document.getElementById("historyDrawer");
 const historyList = document.getElementById("historyList");
+const btnDot = document.getElementById("btnDot");
+
+// Base readout elements
+const baseItems = document.querySelectorAll(".base-item");
+const baseValDec = document.getElementById("baseValDec");
+const baseValHex = document.getElementById("baseValHex");
+const baseValOct = document.getElementById("baseValOct");
+const baseValBin = document.getElementById("baseValBin");
 
 // Load history from localStorage
 let history = JSON.parse(localStorage.getItem("calc_history") || "[]");
 
+function getRadix(base) {
+    switch (base) {
+        case 'hex': return 16;
+        case 'oct': return 8;
+        case 'bin': return 2;
+        default: return 10;
+    }
+}
+
+function updateBaseNReadout(val) {
+    if (!val || val === "Error") {
+        baseValDec.textContent = "0";
+        baseValHex.textContent = "0";
+        baseValOct.textContent = "0";
+        baseValBin.textContent = "0";
+        return;
+    }
+    try {
+        let intVal;
+        if (currentBase === 'hex') {
+            intVal = parseInt(val, 16);
+        } else if (currentBase === 'oct') {
+            intVal = parseInt(val, 8);
+        } else if (currentBase === 'bin') {
+            intVal = parseInt(val, 2);
+        } else {
+            intVal = Math.trunc(parseFloat(val));
+        }
+
+        if (isNaN(intVal)) {
+            baseValDec.textContent = "—";
+            baseValHex.textContent = "—";
+            baseValOct.textContent = "—";
+            baseValBin.textContent = "—";
+            return;
+        }
+
+        baseValDec.textContent = intVal.toString(10);
+        baseValHex.textContent = intVal.toString(16).toUpperCase();
+        baseValOct.textContent = intVal.toString(8);
+        baseValBin.textContent = intVal.toString(2);
+    } catch {
+        baseValDec.textContent = "—";
+        baseValHex.textContent = "—";
+        baseValOct.textContent = "—";
+        baseValBin.textContent = "—";
+    }
+}
+
 function updateDisplay() {
     display.value = currentInput;
     prevExpression.textContent = expression;
+    updateBaseNReadout(currentInput);
+}
+
+function setBase(targetBase) {
+    if (currentBase === targetBase) return;
+    try {
+        let intVal;
+        if (currentBase === 'hex') {
+            intVal = parseInt(currentInput, 16);
+        } else if (currentBase === 'oct') {
+            intVal = parseInt(currentInput, 8);
+        } else if (currentBase === 'bin') {
+            intVal = parseInt(currentInput, 2);
+        } else {
+            intVal = Math.trunc(parseFloat(currentInput));
+        }
+
+        currentBase = targetBase;
+        if (!isNaN(intVal)) {
+            if (targetBase === 'hex') currentInput = intVal.toString(16).toUpperCase();
+            else if (targetBase === 'oct') currentInput = intVal.toString(8);
+            else if (targetBase === 'bin') currentInput = intVal.toString(2);
+            else currentInput = intVal.toString(10);
+        } else {
+            currentInput = "0";
+        }
+    } catch {
+        currentBase = targetBase;
+        currentInput = "0";
+    }
+
+    baseItems.forEach(item => {
+        item.classList.toggle("active", item.dataset.base === targetBase);
+    });
+
+    updateKeyAvailability();
+    updateDisplay();
+}
+
+function toggleBaseMode() {
+    const bases = ['dec', 'hex', 'bin', 'oct'];
+    const nextIdx = (bases.indexOf(currentBase) + 1) % bases.length;
+    setBase(bases[nextIdx]);
+}
+
+function updateKeyAvailability() {
+    const hexBtns = document.querySelectorAll(".btn-hex");
+    hexBtns.forEach(btn => {
+        btn.classList.toggle("disabled", currentBase !== 'hex');
+    });
+
+    const numBtns = document.querySelectorAll(".btn-num");
+    numBtns.forEach(btn => {
+        const num = btn.dataset.num;
+        if (num === undefined) return;
+        const n = parseInt(num);
+        if (currentBase === 'bin') {
+            btn.classList.toggle("disabled", n > 1);
+        } else if (currentBase === 'oct') {
+            btn.classList.toggle("disabled", n > 7);
+        } else {
+            btn.classList.remove("disabled");
+        }
+    });
+
+    if (btnDot) {
+        btnDot.classList.toggle("disabled", currentBase !== 'dec');
+    }
 }
 
 function append(val) {
+    if (currentBase === 'bin' && !['0', '1', '+', '-', '*', '/'].includes(val)) return;
+    if (currentBase === 'oct' && ['8', '9', '.'].includes(val)) return;
+    if (currentBase !== 'dec' && val === '.') return;
+
     if (isResultEvaluated && !['+', '-', '*', '/'].includes(val)) {
         currentInput = val === '.' ? '0.' : val;
         expression = "";
@@ -33,7 +163,21 @@ function append(val) {
     updateDisplay();
 }
 
+function appendHex(char) {
+    if (currentBase !== 'hex') return;
+    if (isResultEvaluated) {
+        currentInput = char;
+        expression = "";
+        isResultEvaluated = false;
+    } else {
+        if (currentInput === "0") currentInput = char;
+        else currentInput += char;
+    }
+    updateDisplay();
+}
+
 function appendMathConst(constantName) {
+    if (currentBase !== 'dec') return;
     const val = constantName === 'PI' ? Math.PI.toFixed(6) : Math.E.toFixed(6);
     if (currentInput === "0" || isResultEvaluated) {
         currentInput = val;
@@ -76,6 +220,7 @@ function toAngle(val) {
 }
 
 function sin() {
+    if (currentBase !== 'dec') return;
     try {
         const val = parseFloat(currentInput);
         const res = Math.sin(toAngle(val));
@@ -90,6 +235,7 @@ function sin() {
 }
 
 function cos() {
+    if (currentBase !== 'dec') return;
     try {
         const val = parseFloat(currentInput);
         const res = Math.cos(toAngle(val));
@@ -104,6 +250,7 @@ function cos() {
 }
 
 function tan() {
+    if (currentBase !== 'dec') return;
     try {
         const val = parseFloat(currentInput);
         const res = Math.tan(toAngle(val));
@@ -120,7 +267,7 @@ function tan() {
 function sqrt() {
     try {
         const val = parseFloat(currentInput);
-        if (val < 0) throw new Error("Negative square root");
+        if (val < 0) throw new Error("Negative root");
         const res = Math.sqrt(val);
         recordHistory(`√(${currentInput})`, res);
         currentInput = parseFloat(res.toFixed(8)).toString();
@@ -132,11 +279,11 @@ function sqrt() {
     }
 }
 
-function power() {
+function power(exp) {
     try {
         const val = parseFloat(currentInput);
-        const res = Math.pow(val, 2);
-        recordHistory(`(${currentInput})²`, res);
+        const res = Math.pow(val, exp);
+        recordHistory(`(${currentInput})^${exp}`, res);
         currentInput = parseFloat(res.toFixed(8)).toString();
         isResultEvaluated = true;
         updateDisplay();
@@ -146,10 +293,61 @@ function power() {
     }
 }
 
-function log10() {
+function customPower() {
+    append('^');
+}
+
+function factorial() {
+    try {
+        const n = parseInt(currentInput);
+        if (n < 0 || isNaN(n)) throw new Error("Invalid");
+        if (n > 170) throw new Error("Overflow");
+        let res = 1;
+        for (let i = 2; i <= n; i++) res *= i;
+        recordHistory(`${n}!`, res);
+        currentInput = res.toString();
+        isResultEvaluated = true;
+        updateDisplay();
+    } catch {
+        currentInput = "Error";
+        updateDisplay();
+    }
+}
+
+function reciprocal() {
     try {
         const val = parseFloat(currentInput);
-        if (val <= 0) throw new Error("Invalid log input");
+        if (val === 0) throw new Error("Div/0");
+        const res = 1 / val;
+        recordHistory(`1/(${currentInput})`, res);
+        currentInput = parseFloat(res.toFixed(8)).toString();
+        isResultEvaluated = true;
+        updateDisplay();
+    } catch {
+        currentInput = "Error";
+        updateDisplay();
+    }
+}
+
+function absVal() {
+    try {
+        const val = parseFloat(currentInput);
+        const res = Math.abs(val);
+        recordHistory(`|${currentInput}|`, res);
+        currentInput = res.toString();
+        isResultEvaluated = true;
+        updateDisplay();
+    } catch {
+        currentInput = "Error";
+        updateDisplay();
+    }
+}
+
+function log10() {
+    if (currentBase !== 'dec') return;
+    try {
+        const val = parseFloat(currentInput);
+        if (val <= 0) throw new Error("Invalid log");
         const res = Math.log10(val);
         recordHistory(`log(${currentInput})`, res);
         currentInput = parseFloat(res.toFixed(8)).toString();
@@ -161,15 +359,58 @@ function log10() {
     }
 }
 
+function ln() {
+    if (currentBase !== 'dec') return;
+    try {
+        const val = parseFloat(currentInput);
+        if (val <= 0) throw new Error("Invalid ln");
+        const res = Math.log(val);
+        recordHistory(`ln(${currentInput})`, res);
+        currentInput = parseFloat(res.toFixed(8)).toString();
+        isResultEvaluated = true;
+        updateDisplay();
+    } catch {
+        currentInput = "Error";
+        updateDisplay();
+    }
+}
+
 function calculate() {
     try {
-        let sanitized = currentInput.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
-        // Prevent unsafe evaluation characters
-        if (/[^0-9+\-*/().\s]/.test(sanitized)) {
-            throw new Error("Invalid characters");
+        let exprToEval = currentInput
+            .replace(/×/g, '*')
+            .replace(/÷/g, '/')
+            .replace(/−/g, '-')
+            .replace(/\^/g, '**');
+
+        let formattedRes;
+
+        if (currentBase === 'dec') {
+            if (/[^0-9+\-*/().\s*]/.test(exprToEval)) {
+                throw new Error("Invalid characters");
+            }
+            const evaluated = Function(`'use strict'; return (${exprToEval})`)();
+            formattedRes = parseFloat(evaluated.toFixed(8)).toString();
+        } else {
+            // Base-N evaluation (Hex, Oct, Bin)
+            const radix = getRadix(currentBase);
+            const tokens = exprToEval.split(/([+\-*/])/).map(t => t.trim()).filter(Boolean);
+            if (tokens.length === 1) {
+                formattedRes = currentInput;
+            } else {
+                let acc = parseInt(tokens[0], radix);
+                for (let i = 1; i < tokens.length; i += 2) {
+                    const op = tokens[i];
+                    const nextVal = parseInt(tokens[i + 1], radix);
+                    if (op === '+') acc += nextVal;
+                    else if (op === '-') acc -= nextVal;
+                    else if (op === '*') acc *= nextVal;
+                    else if (op === '/') acc = Math.trunc(acc / nextVal);
+                }
+                formattedRes = acc.toString(radix).toUpperCase();
+            }
         }
-        const evaluated = Function(`'use strict'; return (${sanitized})`)();
-        const formattedRes = parseFloat(evaluated.toFixed(8)).toString();
+
         recordHistory(currentInput, formattedRes);
         expression = currentInput + " =";
         currentInput = formattedRes;
@@ -181,9 +422,9 @@ function calculate() {
     }
 }
 
-// History Tape Functions
+// History Tape
 function recordHistory(expr, result) {
-    history.unshift({ expr, result, timestamp: Date.now() });
+    history.unshift({ expr, result, base: currentBase, timestamp: Date.now() });
     if (history.length > 25) history.pop();
     localStorage.setItem("calc_history", JSON.stringify(history));
     renderHistory();
@@ -197,7 +438,7 @@ function renderHistory() {
     }
     historyList.innerHTML = history.map((item, idx) => `
         <div class="history-item" onclick="loadFromHistory(${idx})">
-            <div class="history-item-expr">${escapeHtml(item.expr)} =</div>
+            <div class="history-item-expr">[${(item.base || 'DEC').toUpperCase()}] ${escapeHtml(item.expr)} =</div>
             <div class="history-item-res">${escapeHtml(item.result.toString())}</div>
         </div>
     `).join('');
@@ -207,6 +448,7 @@ function loadFromHistory(idx) {
     if (history[idx]) {
         currentInput = history[idx].result.toString();
         expression = history[idx].expr;
+        if (history[idx].base) setBase(history[idx].base);
         isResultEvaluated = true;
         updateDisplay();
         historyDrawer.classList.remove("open");
@@ -218,6 +460,13 @@ function escapeHtml(str) {
     div.textContent = str;
     return div.innerHTML;
 }
+
+// Base-N click handlers
+baseItems.forEach(item => {
+    item.addEventListener("click", () => {
+        setBase(item.dataset.base);
+    });
+});
 
 // Event Listeners
 document.getElementById("degRadBtn").addEventListener("click", toggleDegRad);
@@ -236,8 +485,11 @@ document.getElementById("clearHistoryBtn").addEventListener("click", () => {
 
 // Keyboard Support
 window.addEventListener("keydown", (e) => {
-    if ((e.key >= '0' && e.key <= '9') || ['+', '-', '*', '/', '.', '(', ')'].includes(e.key)) {
+    const key = e.key.toLowerCase();
+    if ((key >= '0' && key <= '9') || ['+', '-', '*', '/', '.', '(', ')'].includes(key)) {
         append(e.key);
+    } else if (currentBase === 'hex' && ['a', 'b', 'c', 'd', 'e', 'f'].includes(key)) {
+        appendHex(key.toUpperCase());
     } else if (e.key === 'Enter' || e.key === '=') {
         e.preventDefault();
         calculate();
@@ -248,6 +500,7 @@ window.addEventListener("keydown", (e) => {
     }
 });
 
-// Initial Render
+// Initial Setup
+updateKeyAvailability();
 renderHistory();
 updateDisplay();

@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scientific Calculator — Pro Math Engine</title>
+    <title>Casio fx-991 PRO — Scientific & Base-N Programmer Calculator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,10 +15,14 @@
     <div class="calculator">
         <!-- Top Toolbar -->
         <div class="calc-header">
-            <span class="calc-brand">CALC·PRO</span>
-            <div class="header-actions">
-                <button type="button" id="degRadBtn" class="mode-pill" title="Toggle Degrees / Radians">DEG</button>
-                <button type="button" id="historyToggleBtn" class="icon-pill" title="View Calculation History">📜</button>
+            <div class="brand-block">
+                <span class="calc-brand">CASIO</span>
+                <span class="calc-model">fx-991 PRO</span>
+            </div>
+            <div class="header-badges">
+                <span class="status-chip" id="mathChip">MATH</span>
+                <button type="button" id="degRadBtn" class="mode-pill" title="Switch Angle Mode (DEG/RAD)">DEG</button>
+                <button type="button" id="historyToggleBtn" class="icon-pill" title="Calculation History">📜</button>
             </div>
         </div>
 
@@ -28,47 +32,85 @@
             <input type="text" id="display" value="0" readonly autocomplete="off">
         </div>
 
+        <!-- Base-N Conversion Strip (HEX, DEC, OCT, BIN) -->
+        <div class="base-n-strip" id="baseNStrip">
+            <button class="base-item active" data-base="dec" id="baseBtnDec">
+                <span class="base-tag">DEC</span>
+                <span class="base-val" id="baseValDec">0</span>
+            </button>
+            <button class="base-item" data-base="hex" id="baseBtnHex">
+                <span class="base-tag">HEX</span>
+                <span class="base-val" id="baseValHex">0</span>
+            </button>
+            <button class="base-item" data-base="oct" id="baseBtnOct">
+                <span class="base-tag">OCT</span>
+                <span class="base-val" id="baseValOct">0</span>
+            </button>
+            <button class="base-item" data-base="bin" id="baseBtnBin">
+                <span class="base-tag">BIN</span>
+                <span class="base-val" id="baseValBin">0</span>
+            </button>
+        </div>
+
+        <!-- Hex Keys Row (A, B, C, D, E, F) -->
+        <div class="hex-keys-row" id="hexKeysRow">
+            <button class="btn btn-hex" data-hex="A" onclick="appendHex('A')">A</button>
+            <button class="btn btn-hex" data-hex="B" onclick="appendHex('B')">B</button>
+            <button class="btn btn-hex" data-hex="C" onclick="appendHex('C')">C</button>
+            <button class="btn btn-hex" data-hex="D" onclick="appendHex('D')">D</button>
+            <button class="btn btn-hex" data-hex="E" onclick="appendHex('E')">E</button>
+            <button class="btn btn-hex" data-hex="F" onclick="appendHex('F')">F</button>
+        </div>
+
         <!-- Scientific Keys Grid -->
         <div class="buttons">
-            <!-- Row 1: Memory & Clear -->
-            <button class="btn btn-fn" onclick="toggleDegRad()">DEG/RAD</button>
+            <!-- Row 1: Memory, Parentheses, Clear -->
+            <button class="btn btn-fn" onclick="toggleBaseMode()" title="Cycle Base-N (DEC, HEX, OCT, BIN)">BASE-N</button>
             <button class="btn btn-fn" onclick="append('(')">(</button>
             <button class="btn btn-fn" onclick="append(')')">)</button>
             <button class="btn btn-danger" onclick="clearDisplay()">AC</button>
             <button class="btn btn-warn" onclick="backspace()">⌫</button>
 
-            <!-- Row 2: Advanced Math -->
+            <!-- Row 2: Trig & Powers -->
             <button class="btn btn-fn" onclick="sin()">sin</button>
             <button class="btn btn-fn" onclick="cos()">cos</button>
             <button class="btn btn-fn" onclick="tan()">tan</button>
-            <button class="btn btn-fn" onclick="power()">x²</button>
+            <button class="btn btn-fn" onclick="power(2)">x²</button>
+            <button class="btn btn-fn" onclick="customPower()" title="x to power y">xʸ</button>
+
+            <!-- Row 3: Math Extras & Division -->
+            <button class="btn btn-fn" onclick="sqrt()">√</button>
+            <button class="btn btn-fn" onclick="factorial()" title="Factorial (n!)">x!</button>
+            <button class="btn btn-fn" onclick="reciprocal()" title="Reciprocal (1/x)">1/x</button>
+            <button class="btn btn-fn" onclick="absVal()" title="Absolute Value (|x|)">|x|</button>
             <button class="btn btn-op" onclick="append('/')">÷</button>
 
-            <!-- Row 3: Roots, Logs & Numbers -->
-            <button class="btn btn-fn" onclick="sqrt()">√</button>
-            <button class="btn btn-num" onclick="append('7')">7</button>
-            <button class="btn btn-num" onclick="append('8')">8</button>
-            <button class="btn btn-num" onclick="append('9')">9</button>
+            <!-- Row 4: Log, Modulo & 7 8 9 -->
+            <button class="btn btn-fn" onclick="log10()">log</button>
+            <button class="btn btn-fn" onclick="ln()">ln</button>
+            <button class="btn btn-num" data-num="7" onclick="append('7')">7</button>
+            <button class="btn btn-num" data-num="8" onclick="append('8')">8</button>
             <button class="btn btn-op" onclick="append('*')">×</button>
 
-            <!-- Row 4: Log, PI & Numbers -->
-            <button class="btn btn-fn" onclick="log10()">log</button>
-            <button class="btn btn-num" onclick="append('4')">4</button>
-            <button class="btn btn-num" onclick="append('5')">5</button>
-            <button class="btn btn-num" onclick="append('6')">6</button>
+            <!-- Row 5: Modulo & 4 5 6 -->
+            <button class="btn btn-fn" onclick="append('%')" title="Modulo / Remainder">mod</button>
+            <button class="btn btn-num" data-num="9" onclick="append('9')">9</button>
+            <button class="btn btn-num" data-num="4" onclick="append('4')">4</button>
+            <button class="btn btn-num" data-num="5" onclick="append('5')">5</button>
             <button class="btn btn-op" onclick="append('-')">−</button>
 
-            <!-- Row 5: Natural Log, Exp & Numbers -->
+            <!-- Row 6: Constants & 1 2 3 -->
             <button class="btn btn-fn" onclick="appendMathConst('PI')">π</button>
-            <button class="btn btn-num" onclick="append('1')">1</button>
-            <button class="btn btn-num" onclick="append('2')">2</button>
-            <button class="btn btn-num" onclick="append('3')">3</button>
+            <button class="btn btn-num" data-num="6" onclick="append('6')">6</button>
+            <button class="btn btn-num" data-num="1" onclick="append('1')">1</button>
+            <button class="btn btn-num" data-num="2" onclick="append('2')">2</button>
             <button class="btn btn-op" onclick="append('+')">+</button>
 
-            <!-- Row 6: Euler, Zero, Point, Equal -->
+            <!-- Row 7: Euler, Scientific EXP, 0, Point, Equal -->
             <button class="btn btn-fn" onclick="appendMathConst('E')">e</button>
-            <button class="btn btn-num btn-zero" onclick="append('0')">0</button>
-            <button class="btn btn-num" onclick="append('.')">.</button>
+            <button class="btn btn-num" data-num="3" onclick="append('3')">3</button>
+            <button class="btn btn-num btn-zero" data-num="0" onclick="append('0')">0</button>
+            <button class="btn btn-num" id="btnDot" onclick="append('.')">.</button>
             <button class="btn btn-equal" onclick="calculate()">=</button>
         </div>
     </div>
@@ -76,7 +118,7 @@
     <!-- History Slide-over Drawer -->
     <div class="history-drawer" id="historyDrawer">
         <div class="drawer-header">
-            <h3>Calculation Tape</h3>
+            <h3>📜 Calculation History</h3>
             <button class="drawer-close-btn" id="drawerCloseBtn">✕</button>
         </div>
         <div class="history-list" id="historyList">
